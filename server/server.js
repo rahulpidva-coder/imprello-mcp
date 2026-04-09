@@ -59,6 +59,21 @@ mcp.tool(
   }
 );
 
+mcp.tool(
+  "sendChallan",
+  { orderId: z.number() },
+  async ({ orderId }) => {
+    const res = await fetch(
+      `https://offspring.codeteam.in/mobileApp/IMP/dbprocess/mcp/api/sendChallanToTelegram.php?orderId=${orderId}`
+    );
+    const data = await res.json();
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
+
 const app = express();
 
 app.post("/mcp", async (req, res) => {

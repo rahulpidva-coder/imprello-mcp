@@ -20,7 +20,7 @@ if ($term === '') {
 
 $termEscaped = mysqli_real_escape_string($con, $term);
 
-$qry = "SELECT prodId, ProductCode, ProductName, Basic
+$qry = "SELECT prodId, ProductCode, ProductName, Basic, dealerPrice
         FROM ".tblPrefix."productlist
         WHERE ProductName LIKE '%{$termEscaped}%'
            OR ProductCode LIKE '%{$termEscaped}%'
@@ -48,7 +48,8 @@ while ($row = mysqli_fetch_assoc($rslt)) {
         'prodId' => (int)$row['prodId'],
         'ProductCode' => $row['ProductCode'],
         'ProductName' => $row['ProductName'],
-        'basicPrice' => (float)$row['Basic']
+        'basicPrice' => (float)$row['Basic'],
+		'dealerPrice' => (float)$row['dealerPrice'],
     ];
 }
 
