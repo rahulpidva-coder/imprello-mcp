@@ -7,8 +7,10 @@ const API_BASE = "https://offspring.codeteam.in/mobileApp/IMP/dbprocess/mcp/api"
 
 const mcp = new McpServer({
   name: "imprello-mcp",
-  version: "1.0.0"
+  version: "1.1.0"
 });
+
+// -------------------- Existing Tools --------------------
 
 mcp.tool(
   "searchDealer",
@@ -63,9 +65,43 @@ mcp.tool(
   "sendChallan",
   { orderId: z.number() },
   async ({ orderId }) => {
-    const res = await fetch(
-      `https://offspring.codeteam.in/mobileApp/IMP/dbprocess/mcp/api/sendChallanToTelegram.php?orderId=${orderId}`
-    );
+    const res = await fetch(`${API_BASE}/sendChallanToTelegram.php?orderId=${orderId}`);
+    const data = await res.json();
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
+
+// -------------------- New Telegram Queue Tools --------------------
+
+mcp.tool(
+  "getPendingTelegramDoc",
+  {},
+  async () => {
+    const res = await fetch(`${API_BASE}/getPendingTelegramDoc.php`);
+    const data = await res.json();
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
+
+mcp.tool(
+  "markTelegramDocStatus",
+  {
+    id: z.number(),
+    status: z.enum(["pending", "processing", "done", "error"]),
+    remarks: z.string().optional().default("")
+  },
+  async ({ id, status, remarks }) => {
+    const url =
+      `${API_BASE}/markTelegramDocStatus.php` +
+      `?id=${encodeURIComponent(id)}` +
+      `&status=${encodeURIComponent(status)}` +
+      `&remarks=${encodeURIComponent(remarks)}`;
+
+    const res = await fetch(url);
     const data = await res.json();
 
     return {
@@ -74,19 +110,32 @@ mcp.tool(
   }
 );
 
+// -------------------- Express App --------------------
+
 const app = express();
+app.use(express.json());
 
 app.post("/mcp", async (req, res) => {
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined
-  });
+  try {
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined
+    });
 
-  res.on("close", () => {
-    transport.close();
-  });
+    res.on("close", () => {
+      transport.close();
+    });
 
-  await mcp.connect(transport);
-  await transport.handleRequest(req, res, req.body);
+    await mcp.connect(transport);
+    await transport.handleRequest(req, res, req.body);
+  } catch (err) {
+    console.error("MCP route error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "MCP route failed",
+        details: err instanceof Error ? err.message : String(err)
+      });
+    }
+  }
 });
 
 app.get("/", (_req, res) => {
@@ -97,20 +146,3 @@ const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`Imprello MCP listening on port ${port}`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

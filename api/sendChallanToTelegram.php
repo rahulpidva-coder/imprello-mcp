@@ -7,7 +7,7 @@ if (!$orderId) {
     exit;
 }
 
-$botToken = "8768402277:AAGy54EbtJDTtxrpfFASFehk8q0HDmANAl8";
+$botToken = "8768402277:AAFzd4YKnVb28piTBkD6OtaafpCflZWd74Y";
 $chatId = "-5278211160";
 
 // Step 1: generate and save PDF
