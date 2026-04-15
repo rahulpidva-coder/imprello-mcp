@@ -110,6 +110,42 @@ mcp.tool(
   }
 );
 
+mcp.tool(
+  "upsertDealerPrice",
+  {
+    dealerId: z.number(),
+    prodId: z.number().optional(),
+    pdctCode: z.string().optional(),
+    price: z.number(),
+    createdBy: z.string().optional().default("mcp_auto"),
+    remarks: z.string().optional().default("Updated via MCP")
+  },
+  async ({ dealerId, prodId, pdctCode, price, createdBy, remarks }) => {
+    const params = new URLSearchParams();
+
+    params.append("dealerId", String(dealerId));
+    params.append("price", String(price));
+
+    if (prodId) params.append("prodId", String(prodId));
+    if (pdctCode) params.append("pdctCode", pdctCode);
+
+    params.append("createdBy", createdBy);
+    params.append("remarks", remarks);
+
+    const res = await fetch(`${API_BASE}/upsertDealerPrice.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
+    });
+
+    const data = await res.json();
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
+
 // -------------------- Express App --------------------
 
 const app = express();
