@@ -170,6 +170,32 @@ mcp.tool(
     };
   }
 );
+
+mcp.tool(
+  "finalizeDeliveredChallan",
+  {
+    orderId: z.number(),
+    loginName: z.string().optional().default("mcp_auto")
+  },
+  async ({ orderId, loginName }) => {
+    const params = new URLSearchParams();
+    params.append("orderId", String(orderId));
+    params.append("loginName", loginName);
+
+    const res = await fetch(`${API_BASE}/finalizeDeliveredChallan.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
+    });
+
+    const data = await res.json();
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
+
 // -------------------- Express App --------------------
 
 const app = express();
