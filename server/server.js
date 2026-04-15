@@ -195,7 +195,33 @@ mcp.tool(
     };
   }
 );
+mcp.tool(
+  "getInvoicePricingAnalytics",
+  {
+    dealerIds: z.array(z.number()).optional(),
+    prodId: z.number().optional(),
+    months: z.number().optional(),
+    dateFrom: z.string().optional(),
+    dateTo: z.string().optional(),
+    latestOnly: z.boolean().optional().default(false),
+    groupByDealer: z.boolean().optional().default(false),
+    summaryOnly: z.boolean().optional().default(false),
+    limit: z.number().optional().default(100)
+  },
+  async (args) => {
+    const res = await fetch(`${API_BASE}/getInvoicePricingAnalytics.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(args)
+    });
 
+    const data = await res.json();
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
 // -------------------- Express App --------------------
 
 const app = express();
