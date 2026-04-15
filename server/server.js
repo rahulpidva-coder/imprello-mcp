@@ -145,7 +145,31 @@ mcp.tool(
     };
   }
 );
+mcp.tool(
+  "sendInvoice",
+  {
+    orderId: z.number().optional(),
+    invNo: z.string().optional()
+  },
+  async ({ orderId, invNo }) => {
+    const params = new URLSearchParams();
 
+    if (orderId) params.append("orderId", String(orderId));
+    if (invNo) params.append("invNo", invNo);
+
+    const res = await fetch(`${API_BASE}/sendInvoiceToTelegram.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
+    });
+
+    const data = await res.json();
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }]
+    };
+  }
+);
 // -------------------- Express App --------------------
 
 const app = express();
